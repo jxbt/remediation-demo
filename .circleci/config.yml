@@ -1,0 +1,70 @@
+version: 2.1
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test
+
+jobs:
+  test:
+  
+    machine:
+      image: ubuntu-2204:2024.04.4
+
+    environment:
+      NIGHTVISION_TARGET: vuln_node_express
+      NIGHTVISION_APP: vuln_node_express
+      NIGHTVISION_AUTH: vuln_node_express
+    steps:
+      - checkout
+
+      - run:
+          name: Install Dependencies
+          command: |
+            node -v
+            npm -v
+            sudo apt-get update && sudo apt-get install -y python3-pip
+            wget -c https://downloads.nightvision.net/binaries/latest/nightvision_latest_linux_amd64.tar.gz -O - | tar -xz
+            sudo mv nightvision /usr/local/bin/
+            python3 -m pip install semgrep
+
+
+      
+      - run:
+          name: Start the app
+          command: |
+            pip3 install -r requirements.txt
+            nohup python3 app.py &
+
+      - run:
+          name: Scan the app
+          command: |
+            nightvision scan -t $NIGHTVISION_TARGET -a $NIGHTVISION_APP > scan-results.txt
+            nightvision export sarif -s "$(head -n 1 scan-results.txt)"
+
+
+      - run:
+          name:  Install nightvision PDF report generator and dependencies
+          shell: /bin/bash
+          command: |
+            git clone https://github.com/jxbt/nightvision_reporter.git
+            cd nightvision_reporter
+            chmod +x install.sh
+            sudo ./install.sh
+            python3 -m venv .venv
+            source .venv/bin/activate
+            pip3 install -r requirements.txt  
+
+
+      - run:
+          name: Generate PDF Report from SARIF
+          command: |
+
+            cd nightvision_reporter
+            source .venv/bin/activate
+            python3 main.py --sarif ../results.sarif --out nightvision-report.pdf
+
+      - store_artifacts:
+          path: nightvision_reporter/nightvision-report.pdf
+          destination: reports/nightvision-report.pdf
