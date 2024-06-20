@@ -42,7 +42,6 @@ jobs:
             nightvision scan -t $NIGHTVISION_TARGET -a $NIGHTVISION_APP > scan-results.txt
             nightvision export sarif -s "$(head -n 1 scan-results.txt)" --swagger-file openapi-spec.yml
 
-
       - run:
           name:  Install nightvision PDF report generator and dependencies
           shell: /bin/bash
