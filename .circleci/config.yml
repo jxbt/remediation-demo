@@ -13,9 +13,8 @@ jobs:
       image: ubuntu-2204:2024.04.4
 
     environment:
-      NIGHTVISION_TARGET: vuln_node_express
-      NIGHTVISION_APP: vuln_node_express
-      NIGHTVISION_AUTH: vuln_node_express
+      NIGHTVISION_TARGET: remediation-demo
+      NIGHTVISION_APP: remediation-demo
     steps:
       - checkout
 
@@ -39,11 +38,11 @@ jobs:
       - run:
           name: Scan the app
           command: |
-            nightvision app create -n remediation-demo
-            nightvision target create -n remediation-demo -u http://127.0.0.1:5000 --type api
-            nightvision swagger extract ./ -t remediation-demo --lang python 
-            nightvision scan -t remediation-demo -a remediation-demo > scan-results.txt
-            nightvision export sarif -s "$(head -n 1 scan-results.txt)"
+#            nightvision app create -n remediation-demo
+#            nightvision target create -n remediation-demo -u http://127.0.0.1:5000 --type api
+            nightvision swagger extract ./ -t $NIGHTVISION_TARGET --lang python 
+            nightvision scan -t $NIGHTVISION_TARGET -a $NIGHTVISION_APP > scan-results.txt
+            nightvision export sarif -s "$(head -n 1 scan-results.txt)" --swagger-file openapi-spec.yml
 
 
       - run:
