@@ -29,7 +29,6 @@ jobs:
             sudo mv nightvision /usr/local/bin/
             python3 -m pip install semgrep
 
-
       
       - run:
           name: Start the app
