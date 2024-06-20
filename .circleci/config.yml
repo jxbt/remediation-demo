@@ -40,7 +40,10 @@ jobs:
       - run:
           name: Scan the app
           command: |
-            nightvision scan -t $NIGHTVISION_TARGET -a $NIGHTVISION_APP > scan-results.txt
+            nightvision app create -n remediation-demo
+            nightvision target create -n remediation-demo -u http://127.0.0.1:5000 --type api
+            nightvision swagger extract ./ -t remediation-demo --lang python 
+            nightvision scan -t remediation-demo -a remediation-demo > scan-results.txt
             nightvision export sarif -s "$(head -n 1 scan-results.txt)"
 
 
